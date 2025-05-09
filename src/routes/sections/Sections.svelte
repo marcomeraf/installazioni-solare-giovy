@@ -72,17 +72,18 @@
     />
   {/if}
 
-  {#if buildingInsights && configId !== undefined}
-    <md-divider inset />
-    <DataLayersSection
-      bind:expandedSection
-      bind:showPanels
-      {googleMapsApiKey}
-      {buildingInsights}
-      {geometryLibrary}
-      {map}
-    />
+  <md-divider inset />
+  <DataLayersSection
+    bind:expandedSection
+    bind:showPanels
+    {googleMapsApiKey}
+    {buildingInsights}
+    {geometryLibrary}
+    {map}
+    {location}
+  />
 
+  {#if buildingInsights && configId !== undefined}
     <md-divider inset />
     <SolarPotentialSection
       bind:expandedSection
