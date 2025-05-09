@@ -79,7 +79,6 @@
       return;
     }
 
-    console.log('showSolarPotential');
     buildingInsights = undefined;
     requestError = undefined;
 
@@ -97,11 +96,8 @@
     }
 
     const solarPotential = buildingInsights.solarPotential;
-    const palette = createPalette(panelsPalette).map(rgbToColor);
-    const minEnergy = solarPotential.solarPanels.slice(-1)[0].yearlyEnergyDcKwh;
-    const maxEnergy = solarPotential.solarPanels[0].yearlyEnergyDcKwh;
 
-    // Filtra i pannelli solari in base all'area personalizzata
+    // Filter panels based on custom area if it exists
     const filteredPanels = customArea 
       ? solarPotential.solarPanels.filter(panel => 
           isPointInPolygon(
@@ -111,7 +107,11 @@
         )
       : solarPotential.solarPanels;
 
-    // Crea i pannelli solari sulla mappa
+    // Create visual panels on map
+    const palette = createPalette(panelsPalette).map(rgbToColor);
+    const minEnergy = filteredPanels.slice(-1)[0]?.yearlyEnergyDcKwh || 0;
+    const maxEnergy = filteredPanels[0]?.yearlyEnergyDcKwh || 0;
+
     solarPanels = filteredPanels.map((panel) => {
       const [w, h] = [solarPotential.panelWidthMeters / 2, solarPotential.panelHeightMeters / 2];
       const points = [
@@ -140,19 +140,28 @@
       });
     });
 
-    // Aggiorna le configurazioni dei pannelli in base all'area filtrata
-    if (customArea && buildingInsights) {
-      const ratio = filteredPanels.length / solarPotential.solarPanels.length;
+    // Update configurations based on filtered panels
+    if (buildingInsights) {
+      // Calculate energy ratio based on filtered panels
+      const totalOriginalEnergy = solarPotential.solarPanels.reduce((sum, panel) => sum + panel.yearlyEnergyDcKwh, 0);
+      const totalFilteredEnergy = filteredPanels.reduce((sum, panel) => sum + panel.yearlyEnergyDcKwh, 0);
+      const energyRatio = totalFilteredEnergy / totalOriginalEnergy;
+
+      // Update configurations
       buildingInsights.solarPotential.solarPanelConfigs = buildingInsights.solarPotential.solarPanelConfigs.map(config => ({
         ...config,
-        panelsCount: Math.min(config.panelsCount, filteredPanels.length),
-        yearlyEnergyDcKwh: config.yearlyEnergyDcKwh * ratio,
+        panelsCount: Math.min(Math.round(config.panelsCount * (filteredPanels.length / solarPotential.solarPanels.length)), filteredPanels.length),
+        yearlyEnergyDcKwh: config.yearlyEnergyDcKwh * energyRatio,
         roofSegmentSummaries: config.roofSegmentSummaries.map(summary => ({
           ...summary,
-          panelsCount: Math.round(summary.panelsCount * ratio),
-          yearlyEnergyDcKwh: summary.yearlyEnergyDcKwh * ratio
+          panelsCount: Math.round(summary.panelsCount * (filteredPanels.length / solarPotential.solarPanels.length)),
+          yearlyEnergyDcKwh: summary.yearlyEnergyDcKwh * energyRatio
         }))
       }));
+
+      // Update other relevant statistics
+      buildingInsights.solarPotential.maxArrayPanelsCount = filteredPanels.length;
+      buildingInsights.solarPotential.maxArrayAreaMeters2 *= filteredPanels.length / solarPotential.solarPanels.length;
     }
   }
 
@@ -256,7 +265,7 @@
             {
               icon: 'solar_power',
               name: 'Numero max pannelli',
-              value: showNumber(buildingInsights.solarPotential.solarPanels.length),
+              value: showNumber(buildingInsights.solarPotential.maxArrayPanelsCount),
               units: 'pannelli',
             },
             {
@@ -274,8 +283,8 @@
               icon="solar_power"
               title="Numero pannelli"
               label={showNumber(panelConfig.panelsCount)}
-              labelSuffix={`/ ${showNumber(solarPanels.length)}`}
-              max={solarPanels.length}
+              labelSuffix={`/ ${showNumber(buildingInsights.solarPotential.maxArrayPanelsCount)}`}
+              max={buildingInsights.solarPotential.maxArrayPanelsCount}
               value={panelConfig.panelsCount}
             />
 
