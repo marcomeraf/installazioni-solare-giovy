@@ -183,6 +183,12 @@ export async function getDataLayerUrls(
     'location.latitude': location.latitude.toFixed(5),
     'location.longitude': location.longitude.toFixed(5),
     radius_meters: radiusMeters.toString(),
+    // The Solar API always returns the highest quality imagery available.
+    // By default the API asks for HIGH quality, which means that HIGH quality isn't available,
+    // but there is an existing MEDIUM or LOW quality, it won't return anything.
+    // Here we ask for *at least* LOW quality, but if there's a higher quality available,
+    // the Solar API will return us the highest quality available.
+    required_quality: 'LOW',
   };
   console.log('GET dataLayers\n', args);
   const params = new URLSearchParams({ ...args, key: apiKey });
