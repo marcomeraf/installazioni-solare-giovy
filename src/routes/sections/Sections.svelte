@@ -27,6 +27,7 @@
   export let map: google.maps.Map;
   export let geometryLibrary: google.maps.GeometryLibrary;
   export let googleMapsApiKey: string;
+  export let customArea: google.maps.Polygon | null;
 
   let buildingInsights: BuildingInsightsResponse | undefined;
 
@@ -69,6 +70,7 @@
       {geometryLibrary}
       {location}
       {map}
+      {customArea}
     />
   {/if}
 
@@ -81,6 +83,7 @@
     {geometryLibrary}
     {map}
     {location}
+    {customArea}
   />
 
   {#if buildingInsights && configId !== undefined}

@@ -39,6 +39,11 @@
   let geometryLibrary: google.maps.GeometryLibrary;
   let mapsLibrary: google.maps.MapsLibrary;
   let placesLibrary: google.maps.PlacesLibrary;
+  let drawingLibrary: google.maps.DrawingLibrary;
+  let drawingManager: google.maps.drawing.DrawingManager;
+  let customArea: google.maps.Polygon | null = null;
+  let isDrawingMode = false;
+
   onMount(async () => {
     // Load the Google Maps libraries.
     const loader = new Loader({ apiKey: googleMapsApiKey });
@@ -46,10 +51,12 @@
       geometry: loader.importLibrary('geometry'),
       maps: loader.importLibrary('maps'),
       places: loader.importLibrary('places'),
+      drawing: loader.importLibrary('drawing')
     };
     geometryLibrary = await libraries.geometry;
     mapsLibrary = await libraries.maps;
     placesLibrary = await libraries.places;
+    drawingLibrary = await libraries.drawing;
 
     // Get the address information for the default location.
     const geocoder = new google.maps.Geocoder();
@@ -71,7 +78,48 @@
       streetViewControl: false,
       zoomControl: false,
     });
+
+    // Initialize drawing manager
+    drawingManager = new google.maps.drawing.DrawingManager({
+      drawingMode: null,
+      drawingControl: false,
+      polygonOptions: {
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.35,
+        editable: true
+      }
+    });
+    drawingManager.setMap(map);
+
+    // Handle polygon complete
+    google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+      if (customArea) {
+        customArea.setMap(null);
+      }
+      customArea = polygon;
+      drawingManager.setDrawingMode(null);
+      isDrawingMode = false;
+    });
   });
+
+  function toggleDrawingMode() {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) {
+      drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+    } else {
+      drawingManager.setDrawingMode(null);
+    }
+  }
+
+  function clearCustomArea() {
+    if (customArea) {
+      customArea.setMap(null);
+      customArea = null;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -108,10 +156,23 @@
           <b>Clicca su un'area qui sotto</b>
           per vedere che tipo di informazioni può fornire l'API Solare.
         </p>
+
+        <div class="flex flex-row space-x-2">
+          <md-filled-button role={undefined} on:click={toggleDrawingMode}>
+            {isDrawingMode ? 'Annulla disegno' : 'Disegna area'}
+            <md-icon slot="icon">{isDrawingMode ? 'close' : 'draw'}</md-icon>
+          </md-filled-button>
+          {#if customArea}
+            <md-outlined-button role={undefined} on:click={clearCustomArea}>
+              Cancella area
+              <md-icon slot="icon">delete</md-icon>
+            </md-outlined-button>
+          {/if}
+        </div>
       </div>
 
       {#if location}
-        <Sections {location} {map} {geometryLibrary} {googleMapsApiKey} />
+        <Sections {location} {map} {geometryLibrary} {googleMapsApiKey} {customArea} />
       {/if}
 
       <div class="grow" />
