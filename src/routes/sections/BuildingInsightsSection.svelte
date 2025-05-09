@@ -40,6 +40,7 @@
   export let configId: number | undefined;
   export let panelCapacityWatts: number;
   export let showPanels: boolean;
+  export let customArea: google.maps.Polygon | null;
 
   export let googleMapsApiKey: string;
   export let geometryLibrary: google.maps.GeometryLibrary;
@@ -69,6 +70,10 @@
     panelCapacityRatio = panelCapacityWatts / defaultPanelCapacity;
   }
 
+  function isPointInPolygon(point: google.maps.LatLng, polygon: google.maps.Polygon): boolean {
+    return google.maps.geometry.poly.containsLocation(point, polygon);
+  }
+
   export async function showSolarPotential(location: google.maps.LatLng) {
     if (requestSent) {
       return;
@@ -95,7 +100,18 @@
     const palette = createPalette(panelsPalette).map(rgbToColor);
     const minEnergy = solarPotential.solarPanels.slice(-1)[0].yearlyEnergyDcKwh;
     const maxEnergy = solarPotential.solarPanels[0].yearlyEnergyDcKwh;
-    solarPanels = solarPotential.solarPanels.map((panel) => {
+
+    // Filtra i pannelli solari in base all'area personalizzata
+    const filteredPanels = customArea 
+      ? solarPotential.solarPanels.filter(panel => 
+          isPointInPolygon(
+            new google.maps.LatLng(panel.center.latitude, panel.center.longitude),
+            customArea
+          )
+        )
+      : solarPotential.solarPanels;
+
+    solarPanels = filteredPanels.map((panel) => {
       const [w, h] = [solarPotential.panelWidthMeters / 2, solarPotential.panelHeightMeters / 2];
       const points = [
         { x: +w, y: +h },
@@ -122,6 +138,15 @@
         fillOpacity: 0.9,
       });
     });
+
+    // Aggiorna le configurazioni dei pannelli in base all'area filtrata
+    if (customArea && buildingInsights) {
+      buildingInsights.solarPotential.solarPanelConfigs = buildingInsights.solarPotential.solarPanelConfigs.map(config => ({
+        ...config,
+        panelsCount: Math.min(config.panelsCount, filteredPanels.length),
+        yearlyEnergyDcKwh: config.yearlyEnergyDcKwh * (filteredPanels.length / solarPotential.solarPanels.length)
+      }));
+    }
   }
 
   $: showSolarPotential(location);
