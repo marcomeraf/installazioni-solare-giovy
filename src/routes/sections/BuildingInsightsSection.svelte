@@ -111,6 +111,7 @@
         )
       : solarPotential.solarPanels;
 
+    // Crea i pannelli solari sulla mappa
     solarPanels = filteredPanels.map((panel) => {
       const [w, h] = [solarPotential.panelWidthMeters / 2, solarPotential.panelHeightMeters / 2];
       const points = [
@@ -141,10 +142,16 @@
 
     // Aggiorna le configurazioni dei pannelli in base all'area filtrata
     if (customArea && buildingInsights) {
+      const ratio = filteredPanels.length / solarPotential.solarPanels.length;
       buildingInsights.solarPotential.solarPanelConfigs = buildingInsights.solarPotential.solarPanelConfigs.map(config => ({
         ...config,
         panelsCount: Math.min(config.panelsCount, filteredPanels.length),
-        yearlyEnergyDcKwh: config.yearlyEnergyDcKwh * (filteredPanels.length / solarPotential.solarPanels.length)
+        yearlyEnergyDcKwh: config.yearlyEnergyDcKwh * ratio,
+        roofSegmentSummaries: config.roofSegmentSummaries.map(summary => ({
+          ...summary,
+          panelsCount: Math.round(summary.panelsCount * ratio),
+          yearlyEnergyDcKwh: summary.yearlyEnergyDcKwh * ratio
+        }))
       }));
     }
   }
