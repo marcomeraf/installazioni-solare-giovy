@@ -47,7 +47,7 @@
   export let map: google.maps.Map;
 
   const icon = 'home';
-  const title = 'Building Insights endpoint';
+  const title = 'Endpoint Informazioni Edificio';
 
   let requestSent = false;
   let requestError: RequestError | undefined;
@@ -91,7 +91,6 @@
       requestSent = false;
     }
 
-    // Create the solar panels on the map.
     const solarPotential = buildingInsights.solarPotential;
     const palette = createPalette(panelsPalette).map(rgbToColor);
     const minEnergy = solarPotential.solarPanels.slice(-1)[0].yearlyEnergyDcKwh;
@@ -99,11 +98,11 @@
     solarPanels = solarPotential.solarPanels.map((panel) => {
       const [w, h] = [solarPotential.panelWidthMeters / 2, solarPotential.panelHeightMeters / 2];
       const points = [
-        { x: +w, y: +h }, // top right
-        { x: +w, y: -h }, // bottom right
-        { x: -w, y: -h }, // bottom left
-        { x: -w, y: +h }, // top left
-        { x: +w, y: +h }, //  top right
+        { x: +w, y: +h },
+        { x: +w, y: -h },
+        { x: -w, y: -h },
+        { x: -w, y: +h },
+        { x: +w, y: +h },
       ];
       const orientation = panel.orientation == 'PORTRAIT' ? 90 : 0;
       const azimuth = solarPotential.roofSegmentStats[panel.segmentIndex].azimuthDegrees;
@@ -134,14 +133,14 @@
       <div class="grid place-items-center py-2 space-y-4">
         <div class="grid place-items-center">
           <p class="body-medium">
-            Error on <code>buildingInsights</code> request
+            Errore nella richiesta <code>buildingInsights</code>
           </p>
-          <p class="title-large">ERROR {requestError.error.code}</p>
+          <p class="title-large">ERRORE {requestError.error.code}</p>
           <p class="body-medium"><code>{requestError.error.status}</code></p>
           <p class="label-medium">{requestError.error.message}</p>
         </div>
         <md-filled-button role={undefined} on:click={() => showSolarPotential(location)}>
-          Retry
+          Riprova
           <md-icon slot="icon">refresh</md-icon>
         </md-filled-button>
       </div>
@@ -156,14 +155,14 @@
     bind:section={expandedSection}
     {icon}
     {title}
-    subtitle={`Yearly energy: ${(
+    subtitle={`Energia annuale: ${(
       (panelConfig.yearlyEnergyDcKwh * panelCapacityRatio) /
       1000
     ).toFixed(2)} MWh`}
   >
     <div class="flex flex-col space-y-2 px-2">
       <span class="outline-text label-medium">
-        <b>{title}</b> provides data on the location, dimensions & solar potential of a building.
+        <b>{title}</b> fornisce dati sulla posizione, dimensioni e potenziale solare di un edificio.
       </span>
 
       <InputPanelsCount
@@ -173,14 +172,14 @@
       <NumberInput
         bind:value={panelCapacityWatts}
         icon="bolt"
-        label="Panel capacity"
-        suffix="Watts"
+        label="Capacità pannello"
+        suffix="Watt"
       />
-      <InputBool bind:value={showPanels} label="Solar panels" />
+      <InputBool bind:value={showPanels} label="Pannelli solari" />
 
       <div class="grid justify-items-end">
         <md-filled-tonal-button role={undefined} on:click={() => apiResponseDialog.show()}>
-          API response
+          Risposta API
         </md-filled-tonal-button>
       </div>
 
@@ -196,7 +195,7 @@
         </div>
         <div slot="actions">
           <md-text-button role={undefined} on:click={() => apiResponseDialog.close()}>
-            Close
+            Chiudi
           </md-text-button>
         </div>
       </md-dialog>
@@ -212,25 +211,25 @@
           rows={[
             {
               icon: 'wb_sunny',
-              name: 'Annual sunshine',
+              name: 'Ore di sole annuali',
               value: showNumber(buildingInsights.solarPotential.maxSunshineHoursPerYear),
-              units: 'hr',
+              units: 'ore',
             },
             {
               icon: 'square_foot',
-              name: 'Roof area',
+              name: 'Area tetto',
               value: showNumber(buildingInsights.solarPotential.wholeRoofStats.areaMeters2),
               units: 'm²',
             },
             {
               icon: 'solar_power',
-              name: 'Max panel count',
+              name: 'Numero max pannelli',
               value: showNumber(buildingInsights.solarPotential.solarPanels.length),
-              units: 'panels',
+              units: 'pannelli',
             },
             {
               icon: 'co2',
-              name: 'CO₂ savings',
+              name: 'Risparmio CO₂',
               value: showNumber(buildingInsights.solarPotential.carbonOffsetFactorKgPerMwh),
               units: 'Kg/MWh',
             },
@@ -241,7 +240,7 @@
           <div class="flex justify-around">
             <Gauge
               icon="solar_power"
-              title="Panels count"
+              title="Numero pannelli"
               label={showNumber(panelConfig.panelsCount)}
               labelSuffix={`/ ${showNumber(solarPanels.length)}`}
               max={solarPanels.length}
@@ -250,7 +249,7 @@
 
             <Gauge
               icon="energy_savings_leaf"
-              title="Yearly energy"
+              title="Energia annuale"
               label={showNumber((panelConfig?.yearlyEnergyDcKwh ?? 0) * panelCapacityRatio)}
               labelSuffix="KWh"
               max={buildingInsights.solarPotential.solarPanelConfigs.slice(-1)[0]

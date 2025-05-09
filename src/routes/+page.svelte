@@ -27,7 +27,7 @@
 
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const defaultPlace = {
-    name: 'Rinconada Library',
+    name: 'Biblioteca Rinconada',
     address: '1213 Newell Rd, Palo Alto, CA 94303',
   };
   let location: google.maps.LatLng | undefined;
@@ -74,12 +74,17 @@
   });
 </script>
 
-<!-- Top bar -->
+<svelte:head>
+  <title>Demo API Solare</title>
+  <meta name="description" content="Demo API Solare" />
+</svelte:head>
+
+<!-- Barra superiore -->
 <div class="flex flex-row h-full">
-  <!-- Main map -->
+  <!-- Mappa principale -->
   <div bind:this={mapElement} class="w-full" />
 
-  <!-- Side bar -->
+  <!-- Barra laterale -->
   <aside class="flex-none md:w-96 w-80 p-2 pt-3 overflow-auto">
     <div class="flex flex-col space-y-2 h-full">
       {#if placesLibrary && map}
@@ -90,18 +95,18 @@
         <p>
           <a
             class="primary-text"
-            href="https://developers.google.com/maps/documentation/solar/overview?hl=en"
+            href="https://developers.google.com/maps/documentation/solar/overview?hl=it"
             target="_blank"
           >
-            Two distinct endpoints of the <b>Solar API</b>
+            Due endpoint distinti dell'<b>API Solare</b>
             <md-icon class="text-sm">open_in_new</md-icon>
           </a>
-          offer many benefits to solar marketplace websites, solar installers, and solar SaaS designers.
+          offrono molti vantaggi ai siti web di mercato solare, agli installatori solari e ai designer di SaaS solari.
         </p>
 
         <p>
-          <b>Click on an area below</b>
-          to see what type of information the Solar API can provide.
+          <b>Clicca su un'area qui sotto</b>
+          per vedere che tipo di informazioni può fornire l'API Solare.
         </p>
       </div>
 
@@ -116,13 +121,13 @@
           href="https://github.com/googlemaps-samples/js-solar-potential"
           target="_blank"
         >
-          View code on GitHub
+          Visualizza codice su GitHub
           <img slot="icon" src="github-mark.svg" alt="GitHub" width="16" height="16" />
         </md-text-button>
       </div>
 
       <span class="pb-4 text-center outline-text label-small">
-        This is not an officially supported Google product.
+        Questo non è un prodotto ufficialmente supportato da Google.
       </span>
     </div>
   </aside>

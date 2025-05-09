@@ -30,7 +30,6 @@
   let textFieldElement: MdFilledTextField;
 
   onMount(async () => {
-    // https://lit.dev/docs/components/shadow-dom/
     await textFieldElement.updateComplete;
     const inputElement = textFieldElement.renderRoot.querySelector('input') as HTMLInputElement;
     const autocomplete = new placesLibrary.Autocomplete(inputElement, {
@@ -43,7 +42,6 @@
         return;
       }
       if (place.geometry.viewport) {
-        // map.fitBounds(place.geometry.viewport);
         map.setCenter(place.geometry.location);
         map.setZoom(zoom);
       } else {
@@ -61,6 +59,6 @@
   });
 </script>
 
-<md-filled-text-field bind:this={textFieldElement} label="Search an address" value={initialValue}>
+<md-filled-text-field bind:this={textFieldElement} label="Cerca un indirizzo" value={initialValue}>
   <md-icon slot="leadingicon">search</md-icon>
 </md-filled-text-field>
